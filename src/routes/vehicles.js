@@ -69,7 +69,7 @@ router.get("/id/:id", async (req, res) => {
     p.id = ?`
   );
   const pricelistById = await prepare.execute([req.params.id]);
-  await prepare.close();
+  prepare.close();
   if (pricelistById[0]) {
     res.json(pricelistById[0]);
   } else {
@@ -112,7 +112,6 @@ router.get("/years", async (req, res) => {
 });
 
 // Get year data by id
-
 router.get("/year/id/:id", async (req, res) => {
   // Prepare the SQL statement to get a year by id
   const prepare = await conn.prepare(
@@ -120,13 +119,64 @@ router.get("/year/id/:id", async (req, res) => {
   );
   // Execute the prepared statement with the id from the request parameter
   const yearById = await prepare.execute([req.params.id]);
-  await prepare.close();
+  prepare.close();
   // Check if the year is found
   if (yearById[0]) {
     res.json(yearById[0]);
   } else {
     res.status(404);
     res.send("Id not found.");
+  }
+});
+
+// Get all vehicle-models data with optional type and brand parameters
+router.get("/vehicle-models", async (req, res) => {
+  try {
+    // Get limit and offset parameters from query string
+    const limit = Number(req.query.limit) || 4; // Default limit 4
+    const offset = Number(req.query.offset) || 0; // Default offset 0
+    const type = req.query.type || null;
+    const brand = req.query.brand || null;
+
+    // Prepare SQL statement to query vehicle-models data
+    let sql = `
+      SELECT 
+        vm.id, 
+        vm.name as model_name,
+        vt.name AS type_name,
+        vb.name AS brand_name
+      FROM 
+        vehicle_models vm
+      JOIN vehicle_types vt ON vm.type_id = vt.id
+      JOIN vehicle_brands vb ON vt.brand_id = vb.id
+    `;
+    const params = [];
+    if (type) {
+      sql += ` WHERE vt.name = ?`;
+      params.push(type);
+    }
+    if (brand) {
+      sql += brand ? ` AND vb.name = ?` : ` WHERE vb.name = ?`;
+      params.push(brand);
+    }
+    sql += ` ORDER BY vm.name ASC LIMIT ? OFFSET ?`;
+    params.push(limit, offset);
+
+    // Execute prepared statement
+    const result = await conn.query(sql, params);
+
+    // Send response with vehicle-models data
+    res.json({
+      data: result.length > 0 ? result : [],
+      total: result.length,
+      limit: limit,
+      offset: offset,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "An error occurred while retrieving vehicle-models",
+    });
   }
 });
 

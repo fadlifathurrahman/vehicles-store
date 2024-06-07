@@ -7,7 +7,6 @@ INSERT INTO users (`name`, email, `password`, is_admin) VALUES
 ('Udin', 'udin@example.com', '<hashed_password>', FALSE),
 ('Firmansyah', 'firmansyah@example.com', '<hashed_password>', TRUE);
 
-
 INSERT INTO vehicle_brands (`name`) VALUES
   ('Toyota'),
   ('Honda'),
