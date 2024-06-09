@@ -1,26 +1,38 @@
-import conn from "../db.js";
-import bcrypt from "bcrypt";
-import express from "express";
-import jwt from "jsonwebtoken";
+import conn from "../db.js"; // Import database connection
+import bcrypt from "bcrypt"; // Import password hashing library
+import express from "express"; // Import Express framework
+import jwt from "jsonwebtoken"; // Import JSON Web Token library
 
-const router = express.Router();
+const router = express.Router(); // Create Express router
 
+// POST route for user login
 router.post("/login", async (req, res) => {
   try {
+    // Check if user is already logged in
+    if (req.body.user) {
+      return res.status(400).json({ message: "You are already logged in." });
+    }
+    // Check if email and password are present
+    if (!req.body.email || !req.body.password) {
+      return res
+        .status(400)
+        .json({ message: "Email and password are required." });
+    }
+    // Query database for user with given email
     const user = await conn.query("SELECT * FROM users WHERE email = ?", [
       req.body.email,
     ]);
 
+    // Check if user exists
     if (user.length === 0) {
       return res.status(401).send("Invalid email.");
     }
-    // non-hashing check
+    // Check password match (non-hashing check)
     const match = req.body.password === user[0].password;
     if (!match) {
       return res.status(401).send("Invalid password.");
     }
-    
-    // hashing check
+    // // Check password match (hashing check)
     // const hashedPassword = await bcrypt.hash(req.body.password, 10);
     // if (hashedPassword !== user[0].password) {
     //   return res.status(401).send("Invalid password.");
@@ -41,6 +53,7 @@ router.post("/login", async (req, res) => {
       },
     };
 
+    // Send different responses based on user type
     if (user[0].is_admin) {
       res.json(userData);
     } else {
@@ -54,13 +67,22 @@ router.post("/login", async (req, res) => {
   }
 });
 
+// POST route for user logout
+router.post("/logout", (req, res) => {
+  // Clear the session cookie
+  res.clearCookie("token");
+  res.json({ message: "Logged out successfully" });
+});
+
+// POST route for user registration
 router.post("/register", async (req, res) => {
-  // Validate required fields (improved clarity and error handling)
+  // Validate required fields
   const requiredFields = ["name", "email", "password"];
   const missingFields = requiredFields.filter(
     (field) => !req.body || !req.body[field]
   );
 
+  // Send error response if any required field is missing
   if (missingFields.length > 0) {
     return res.status(400).json({
       message: "Missing required fields:",
@@ -79,7 +101,7 @@ router.post("/register", async (req, res) => {
     });
   } else {
     try {
-      // Hashing passwaord before insert to database
+      // Hash password before inserting to database
       const hash = await bcrypt.hash(req.body.password, 10);
       // Insert new user data to database
       await conn.query(
@@ -97,4 +119,5 @@ router.post("/register", async (req, res) => {
   }
 });
 
+// Export the router
 export default router;
