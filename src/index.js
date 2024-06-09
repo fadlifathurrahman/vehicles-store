@@ -3,8 +3,8 @@ import "dotenv/config";
 // import express
 import express from "express";
 // import auth
-import authMiddleware from "./middlewares/authMiddleware.js";
-import adminAuthRouter from "./routes/adminAuth.js";
+import authMiddleware from "./middlewares/auth-middleware.js";
+import adminAuthRouter from "./routes/admin-auth.js";
 // import components
 import vehicleRoute from "./routes/vehicles.js";
 import users from "./routes/users.js";

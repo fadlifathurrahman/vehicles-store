@@ -5,8 +5,8 @@ USE vehicles;
 CREATE TABLE users (
   id INT PRIMARY KEY AUTO_INCREMENT,
   `name` VARCHAR(255) NOT NULL,
-  email VARCHAR(255) NOT NULL UNIQUE,  -- Unique email for user identification
-  `password` TEXT NOT NULL,        -- Hashed password for secure storage
+  email VARCHAR(255) NOT NULL UNIQUE,  
+  `password` TEXT NOT NULL,        
   is_admin BOOLEAN NOT NULL DEFAULT FALSE,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

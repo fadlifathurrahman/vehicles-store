@@ -1,6 +1,5 @@
 USE vehicles;
 
-DELETE FROM users;
 INSERT INTO users (`name`, email, `password`, is_admin) VALUES
 ('user1', 'user1@example.com', 'user1', FALSE), 
 ('user12', 'user2@example.com', 'user2', FALSE),
@@ -41,4 +40,4 @@ INSERT INTO pricelists (CODE, price, year_id, model_id) VALUES
   ('CVIC-EX-2022', 350000000, (SELECT id FROM vehicle_years WHERE YEAR = 2022), (SELECT id FROM vehicle_models WHERE `name` = 'CR-V')),
   ('PAJ-Dakar-2021', 550000000, (SELECT id FROM vehicle_years WHERE YEAR = 2021), (SELECT id FROM vehicle_models WHERE `name` = 'Pajero Sport')), 
   ('SWIFT-GS-2020', 220000000, (SELECT id FROM vehicle_years WHERE YEAR = 2020), (SELECT id FROM vehicle_models WHERE `name` = 'Swift')),
-  ('AYLA-X-2023', 180000000, (SELECT id FROM vehicle_years WHERE YEAR = 2023), (SELECT id FROM vehicle_models WHERE `name` = 'Sirion'));  
+  ('AYLA-X-2023', 180000000, (SELECT id FROM vehicle_years WHERE YEAR = 2023), (SELECT id FROM vehicle_models WHERE `name` = 'Sirion'));  -- Modify model `name` or use retrieved ID for accuracy

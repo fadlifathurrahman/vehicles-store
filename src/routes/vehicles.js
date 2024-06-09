@@ -9,7 +9,7 @@ router.get("/all", async (req, res) => {
     // Get limit and offset parameters from query string
     const limit = parseInt(req.query.limit) || 4; // Default limit 4
     const offset = parseInt(req.query.offset) || 0; // Default offset 0
-    const pricelistId = req.query.modelId || null;
+    const pricelistId = req.query.pricelistId || null;
     const yearId = req.query.yearId || null;
     const modelId = req.query.modelId || null;
     const typeId = req.query.typeId || null;
@@ -35,34 +35,36 @@ router.get("/all", async (req, res) => {
         JOIN vehicle_models vm ON p.model_id = vm.id
         JOIN vehicle_types vt ON vm.type_id = vt.id
         JOIN vehicle_brands vb ON vt.brand_id = vb.id
+      WHERE p.deleted_at IS NULL
     `;
 
     const params = [];
 
     if (pricelistId) {
-      sql += ` WHERE p.id = ?`;
+      sql += ` AND p.id = ?`;
       params.push(pricelistId);
-    } else if (yearId) {
-      sql += ` WHERE vy.id = ?`;
-      params.push(yearId);
-    } else if (modelId) {
-      sql += ` WHERE vm.id = ?`;
-      params.push(modelId);
-    } else if (typeId) {
-      sql += ` WHERE vt.id = ?`;
-      params.push(typeId);
-    } else if (brandId) {
-      sql += ` WHERE vb.id = ?`;
-      params.push(brandId);
-    } else {
-      sql += ` ORDER BY p.code ASC LIMIT ? OFFSET ?`;
-      params.push(limit, offset);
     }
+    if (yearId) {
+      sql += ` AND vy.id = ?`;
+      params.push(yearId);
+    }
+    if (modelId) {
+      sql += ` AND vm.id = ?`;
+      params.push(modelId);
+    }
+    if (typeId) {
+      sql += ` AND vt.id = ?`;
+      params.push(typeId);
+    }
+    if (brandId) {
+      sql += ` AND vb.id = ?`;
+      params.push(brandId);
+    }
+    sql += ` ORDER BY p.code ASC LIMIT ? OFFSET ?`;
+    params.push(limit, offset);
 
     // Execute prepared statement
     const result = await conn.query(sql, params);
-
-    console.log(sql);
 
     // Send response with pricelists data
     res.json({
@@ -93,18 +95,18 @@ router.get("/years", async (req, res) => {
         id,
         year
       FROM vehicle_years
-    `;
+      WHERE deleted_at IS NULL`;
 
     const params = [];
 
     if (yearId && yearValue) {
-      sql += ` WHERE id = ? AND year = ?`;
+      sql += ` AND id = ? AND year = ?`;
       params.push(yearId, yearValue);
     } else if (yearId) {
-      sql += ` WHERE id = ?`;
+      sql += ` AND id = ?`;
       params.push(yearId);
     } else if (yearValue) {
-      sql += ` WHERE year = ?`;
+      sql += ` AND year = ?`;
       params.push(yearValue);
     } else {
       sql += ` ORDER BY year ASC LIMIT ? OFFSET ?`;
@@ -130,7 +132,7 @@ router.get("/years", async (req, res) => {
 });
 
 // Get all vehicle-models data with optional type and brand parameters
-router.get("/vehicle-models", async (req, res) => {
+router.get("/vehicleModels", async (req, res) => {
   try {
     // Get limit and offset parameters from query string
     const limit = parseInt(req.query.limit) || 4; // Default limit 4
@@ -154,34 +156,25 @@ router.get("/vehicle-models", async (req, res) => {
         vehicle_types vt ON vm.type_id = vt.id
       JOIN 
         vehicle_brands vb ON vt.brand_id = vb.id
+      WHERE vm.deleted_at IS NULL
     `;
     const params = [];
 
-    if (modelId && typeId && brandId) {
-      sql += ` WHERE vm.id = ? AND vt.id = ? AND vb.id = ?`;
-      params.push(modelId, typeId, brandId);
-    } else if (modelId && typeId) {
-      sql += ` WHERE vm.id = ? AND vt.id = ?`;
-      params.push(modelId, typeId);
-    } else if (modelId && brandId) {
-      sql += ` WHERE vm.id = ? AND vb.id = ?`;
-      params.push(modelId, brandId);
-    } else if (typeId && brandId) {
-      sql += ` WHERE vt.id = ? AND vb.id = ?`;
-      params.push(typeId, brandId);
-    } else if (modelId) {
-      sql += ` WHERE vm.id = ?`;
+    if (modelId) {
+      sql += ` AND vm.id = ?`;
       params.push(modelId);
-    } else if (typeId) {
-      sql += ` WHERE vt.id = ?`;
-      params.push(typeId);
-    } else if (brandId) {
-      sql += ` WHERE vb.id = ?`;
-      params.push(brandId);
-    } else {
-      sql += ` ORDER BY vm.name ASC LIMIT ? OFFSET ?`;
-      params.push(limit, offset);
     }
+    if (typeId) {
+      sql += ` AND vt.id = ?`;
+      params.push(typeId);
+    }
+    if (brandId) {
+      sql += ` AND vb.id = ?`;
+      params.push(brandId);
+    }
+
+    sql += ` ORDER BY vm.name ASC LIMIT ? OFFSET ?`;
+    params.push(limit, offset);
 
     // Execute prepared statement
     const result = await conn.query(sql, params);
@@ -202,7 +195,7 @@ router.get("/vehicle-models", async (req, res) => {
 });
 
 // Get all vehicle-types data with optional type and brand parameters
-router.get("/vehicle-types", async (req, res) => {
+router.get("/vehicleTypes", async (req, res) => {
   try {
     // Get limit and offset parameters from query string
     const limit = parseInt(req.query.limit) || 4; // Default limit 4
@@ -218,17 +211,18 @@ router.get("/vehicle-types", async (req, res) => {
       FROM 
         vehicle_types vt
       JOIN vehicle_brands vb ON vt.brand_id = vb.id
+      WHERE vt.deleted_at IS NULL AND vb.deleted_at IS NULL
     `;
     const params = [];
 
     if (typeId && brandId) {
-      sql += ` WHERE vt.id = ? AND vb.id = ?`;
+      sql += ` AND vt.id = ? AND vb.id = ?`;
       params.push(typeId, brandId);
     } else if (typeId) {
-      sql += ` WHERE vt.id = ?`;
+      sql += ` AND vt.id = ?`;
       params.push(typeId);
     } else if (brandId) {
-      sql += ` WHERE vb.id = ?`;
+      sql += ` AND vb.id = ?`;
       params.push(brandId);
     } else {
       sql += ` ORDER BY vt.name ASC LIMIT ? OFFSET ?`;
@@ -252,7 +246,7 @@ router.get("/vehicle-types", async (req, res) => {
 });
 
 // Get vehicle-brands data by id and name with optional id and name parameters
-router.get("/vehicle-brands", async (req, res) => {
+router.get("/vehicleBrands", async (req, res) => {
   try {
     // Get limit and offset parameters from query string
     const limit = parseInt(req.query.limit) || 4; // Default limit 4
@@ -288,7 +282,7 @@ router.get("/vehicle-brands", async (req, res) => {
 
     // Execute prepared statement
     const result = await conn.query(sql, params);
-    console.log("sql: \n", sql);
+    
     // Send response with vehicle-brands data
     res.json({
       data: result,
