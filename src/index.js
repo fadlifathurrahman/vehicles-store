@@ -2,17 +2,29 @@
 import "dotenv/config";
 // import express
 import express from "express";
+// import auth
+import authMiddleware from "./middlewares/authMiddleware.js";
+import adminAuthRouter from "./routes/adminAuth.js";
 // import components
-import vehicleroute from "./routes/vehicles.js";
+import vehicleRoute from "./routes/vehicles.js";
+import users from "./routes/users.js";
 
 // export express function
 export const app = express();
+
+// set up middleware
+app.use(express.json());
 
 // set up express app
 const router = express.Router();
 // user's routes
 app.use("/api", router);
-router.use("/pricelists", vehicleroute);
+router.use("/pricelists", vehicleRoute);
+router.use("/users", users);
+
+// using middleware
+router.use(authMiddleware);
+app.use("/adminAuth/", adminAuthRouter);
 
 // set up server
 const port = 3000;
