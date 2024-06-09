@@ -7,12 +7,12 @@
 	},
 	"item": [
 		{
-			"name": "Get All Pricelists",
+			"name": "Get All Vehicles",
 			"request": {
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:3000/api/pricelists/all?limit=10",
+					"raw": "http://localhost:3000/api/pricelists/all?limit=10&typeId=1",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -45,8 +45,7 @@
 						},
 						{
 							"key": "typeId",
-							"value": "1",
-							"disabled": true
+							"value": "1"
 						},
 						{
 							"key": "brandId",
@@ -150,7 +149,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:3000/api/pricelists/vehicleTypes?limit=10&offset=0&typeId=2&brandId=3",
+					"raw": "http://localhost:3000/api/pricelists/vehicleTypes?limit=10&offset=0",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -172,11 +171,13 @@
 						},
 						{
 							"key": "typeId",
-							"value": "2"
+							"value": "2",
+							"disabled": true
 						},
 						{
 							"key": "brandId",
-							"value": "3"
+							"value": "3",
+							"disabled": true
 						}
 					]
 				}
@@ -284,13 +285,13 @@
 			"response": []
 		},
 		{
-			"name": "Add Pricelist",
+			"name": "Add Vehicle",
 			"request": {
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"code\": \"\",\r\n    \"price\": 1599000,\r\n    \"yearId\": \"1\",\r\n    \"modelId\": \"1\"\r\n}",
+					"raw": "{\r\n    \"code\": \"NEW-PL-CODE-3\",\r\n    \"price\": 1599000,\r\n    \"yearId\": \"1\",\r\n    \"modelId\": \"5\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -298,7 +299,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:3000/adminAuth/addPricelist",
+					"raw": "http://localhost:3000/adminAuth/addVehicle",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -306,7 +307,7 @@
 					"port": "3000",
 					"path": [
 						"adminAuth",
-						"addPricelist"
+						"addVehicle"
 					]
 				}
 			},
@@ -429,7 +430,85 @@
 			"response": []
 		},
 		{
-			"name": "Delete Brand",
+			"name": "Delete Vehicle",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/adminAuth/deleteVehicle?id=5",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"adminAuth",
+						"deleteVehicle"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "5"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Vehicle Year",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/adminAuth/deleteVehicleYear?id=6",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"adminAuth",
+						"deleteVehicleYear"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "6"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Vehicle Model",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/adminAuth/deleteVehicleModel?id=6",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"adminAuth",
+						"deleteVehicleModel"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "6"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Vehicle Type",
 			"request": {
 				"method": "DELETE",
 				"header": [],
@@ -448,6 +527,223 @@
 						{
 							"key": "id",
 							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Vehicle Brand",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/adminAuth/deleteVehicleBrand?id=2",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"adminAuth",
+						"deleteVehicleBrand"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "2"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Vehicle Year",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"newYear\": 2022\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/adminAuth/updateVehicleYear?yearId=2",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"adminAuth",
+						"updateVehicleYear"
+					],
+					"query": [
+						{
+							"key": "yearId",
+							"value": "2"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Vehicle Model",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "// update newModelName and newTypeId\r\n// {\r\n//     \"newModelName\": \"Edit Model 2\",\r\n//     \"newTypeId\" : 1\r\n// }\r\n\r\n// only update newModelName\r\n{\r\n    \"newModelName\": \"Edit Model 2\"\r\n}\r\n\r\n// only update newTypeId\r\n// {\r\n//     \"newTypeId\" : 5\r\n// }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/adminAuth/updateVehicleModel?modelId=2",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"adminAuth",
+						"updateVehicleModel"
+					],
+					"query": [
+						{
+							"key": "modelId",
+							"value": "2"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Vehicle Type",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "// // update newTypeName and newBrandId\r\n// {\r\n//     \"newTypeName\": \"Edit Type 4\",\r\n//     \"newBrandId\" : 3\r\n// }\r\n\r\n// // only update newTypeName\r\n// {\r\n//     \"newTypeName\": \"Edit Type 3\"\r\n// }\r\n\r\n// only update newBrandId\r\n{\r\n    \"newBrandId\" : 5\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/adminAuth/updateVehicleType?typeId=3",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"adminAuth",
+						"updateVehicleType"
+					],
+					"query": [
+						{
+							"key": "typeId",
+							"value": "3"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Vehicle Brand",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"newBrandName\" : \"Edit Brand 3\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/adminAuth/updateVehicleBrand?brandId=3",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"adminAuth",
+						"updateVehicleBrand"
+					],
+					"query": [
+						{
+							"key": "brandId",
+							"value": "3"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Vehicle",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "code",
+							"value": "Edit-Kode-1",
+							"type": "text"
+						},
+						{
+							"key": "price",
+							"value": "999000",
+							"type": "text"
+						},
+						{
+							"key": "yearId",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "modelId",
+							"value": "2",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:3000/adminAuth/updateVehicle?id=2",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"adminAuth",
+						"updateVehicle"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "2"
 						}
 					]
 				}
