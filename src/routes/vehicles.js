@@ -35,7 +35,8 @@ router.get("/all", async (req, res) => {
         JOIN vehicle_models vm ON p.model_id = vm.id
         JOIN vehicle_types vt ON vm.type_id = vt.id
         JOIN vehicle_brands vb ON vt.brand_id = vb.id
-      WHERE p.deleted_at IS NULL
+      WHERE 
+        p.deleted_at IS NULL
     `;
 
     const params = [];
@@ -95,7 +96,8 @@ router.get("/years", async (req, res) => {
         id,
         year
       FROM vehicle_years
-      WHERE deleted_at IS NULL`;
+      WHERE 
+        deleted_at IS NULL`;
 
     const params = [];
 
@@ -156,7 +158,8 @@ router.get("/vehicleModels", async (req, res) => {
         vehicle_types vt ON vm.type_id = vt.id
       JOIN 
         vehicle_brands vb ON vt.brand_id = vb.id
-      WHERE vm.deleted_at IS NULL
+      WHERE 
+        vm.deleted_at IS NULL
     `;
     const params = [];
 
@@ -211,7 +214,8 @@ router.get("/vehicleTypes", async (req, res) => {
       FROM 
         vehicle_types vt
       JOIN vehicle_brands vb ON vt.brand_id = vb.id
-      WHERE vt.deleted_at IS NULL AND vb.deleted_at IS NULL
+      WHERE 
+        vt.deleted_at IS NULL
     `;
     const params = [];
 
