@@ -3,8 +3,11 @@ import "dotenv/config";
 // import express
 import express from "express";
 // import auth
-import authMiddleware from "./middlewares/auth-middleware.js";
+import adminAuthMiddleware from "./middlewares/admin-auth-middleware.js";
+import nonAdminAuthMiddleware from "./middlewares/non-admin-auth-middleware.js";
 import adminAuthRouter from "./routes/admin-auth.js";
+import nonAdminAuthRouter from "./routes/non-admin-auth.js";
+
 // import components
 import vehicleRoute from "./routes/vehicles.js";
 import users from "./routes/users.js";
@@ -23,7 +26,11 @@ router.use("/pricelists", vehicleRoute);
 router.use("/users", users);
 
 // using middleware
-router.use(authMiddleware);
+router.use(nonAdminAuthMiddleware);
+app.use("/userAuth/", nonAdminAuthRouter);
+
+// using middleware
+router.use(adminAuthMiddleware);
 app.use("/adminAuth/", adminAuthRouter);
 
 // set up server

@@ -1,11 +1,226 @@
+// Import required modules
 import express from "express";
-import conn from "../db.js";
-import authMiddleware from "../middlewares/auth-middleware.js";
+import bcrypt from "bcrypt";
+import conn from "../db.js"; // Import the database connection
+import adminAuthMiddleware from "../middlewares/admin-auth-middleware.js"; // Import the authentication middleware
 
-// membuat route (dengan objek Router)
+// Create a router (using express.Router()) to define the routes
 const router = express.Router();
 
-router.use(authMiddleware);
+// Use the authentication middleware to protect the routes to all routes in this router
+router.use(adminAuthMiddleware);
+
+// Route to get current user
+router.get("/me", (req, res) => {
+  res.json(req.user);
+});
+
+// Route to update a user email
+router.patch("/updateAdminEmail", adminAuthMiddleware, async (req, res) => {
+  const { id } = req.user;
+  const newEmail = req.body.newEmail;
+
+  try {
+    // Validate required fields
+    if (!id || !newEmail) {
+      return res
+        .status(400)
+        .json({ message: "Some required fields are missing." });
+    }
+
+    // Check if the email is already taken
+    const existingUser = await conn.query(
+      "SELECT * FROM users WHERE email = ? AND is_admin = 1 AND deleted_at IS NULL",
+      [newEmail]
+    );
+    if (existingUser.length > 0) {
+      return res.status(400).json({ message: "Email is already taken." });
+    }
+
+    // Update the user email in the database
+    const sql = `
+          UPDATE users
+          SET email = ?
+          WHERE id = ?
+        `;
+    const values = [newEmail, id];
+
+    // Execute the update statement
+    await conn.query(sql, values);
+
+    // Send a response indicating that the email was updated
+    res.status(200).json({ message: "Email updated successfully" });
+  } catch (err) {
+    // If there was an error, send a 500 status code with the error message
+    console.error("Error updating email:", err);
+    res.status(500).send("Error updating email");
+  }
+});
+
+// Route to update a user password
+router.patch("/updateAdminPassword", adminAuthMiddleware, async (req, res) => {
+  const { id } = req.user;
+  const currentPassword = req.body.currentPassword;
+  const newPassword = req.body.newPassword;
+
+  try {
+    // Validate required fields
+    if (!id || !currentPassword || !newPassword) {
+      return res
+        .status(400)
+        .json({ message: "Some required fields are missing." });
+    }
+
+    // Check if the userId exists in the users table
+    const existingUser = await conn.query(
+      "SELECT * FROM users WHERE id = ? AND is_admin = 1 AND deleted_at IS NULL",
+      [id]
+    );
+    if (existingUser.length === 0) {
+      return res.status(400).json({ message: "UserId is invalid." });
+    }
+
+    // Compare the current password with the hashed password in the database
+    const isPasswordValid = await bcrypt.compare(
+      currentPassword,
+      existingUser[0].password
+    );
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: "Invalid current password." });
+    }
+
+    // Hash the new password before updating it in the database
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update the user password in the database
+    const sql = `
+        UPDATE users
+        SET password = ?
+        WHERE id = ?
+      `;
+    const values = [hashedPassword, id];
+
+    // Execute the update statement
+    await conn.query(sql, values);
+
+    // Send a response indicating that the brand was updated
+    res.status(200).json({ message: "Password updated successfully" });
+  } catch (err) {
+    // If there was an error, send a 500 status code with the error message
+    console.error("Error updating password:", err);
+    res.status(500).send("Error updating password");
+  }
+});
+
+// Route to update a user name
+router.patch("/updateAdminName", adminAuthMiddleware, async (req, res) => {
+  const { id } = req.user;
+  const newAdminName = req.body.newAdminName;
+
+  try {
+    // Validasi setiap req.body tidak boleh kosong
+    if (!id || !newAdminName) {
+      return res
+        .status(400)
+        .json({ message: "Some required fields are missing." });
+    }
+
+    // Check if the userId exists in the users table
+    const existingAdmin = await conn.query(
+      "SELECT * FROM users WHERE id = ? AND is_admin = 1 AND deleted_at IS NULL",
+      [id]
+    );
+    if (existingAdmin.length === 0) {
+      return res.status(400).json({ message: "Id is invalid." });
+    }
+
+    // Check if the newUserName is the same as the current user name
+    if (newAdminName === existingAdmin[0].name) {
+      return res
+        .status(409)
+        .json({ message: "The new name is the same as the current name." });
+    }
+
+    // Update the user name in the database
+    const sql = `
+        UPDATE users
+        SET name = ?
+        WHERE id = ?
+      `;
+    const values = [newAdminName, id];
+
+    // Execute the update statement
+    await conn.query(sql, values);
+
+    // Send a response indicating that the brand was updated
+    res.status(200).json({ message: "Name updated successfully" });
+  } catch (err) {
+    // If there was an error, send a 500 status code with the error message
+    console.error("Error updating name:", err);
+    res.status(500).send("Error updating name");
+  }
+});
+
+// Route to delete a user account for admin
+router.delete("/deleteAdmin", adminAuthMiddleware, async (req, res) => {
+  const { id } = req.user;
+
+  // Check if the userId is provided in the query string
+  if (!id) {
+    return res.status(400).send("Some required fields are missing.");
+  }
+
+  // Check if the userId exists in the users table
+  const existingUser = await conn.query(
+    "SELECT * FROM users WHERE id = ? AND deleted_at IS NULL AND is_admin = 1",
+    [id]
+  );
+  if (existingUser.length === 0) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  // Update the deleted_at column with current datetime and change user's name, email, and password if the user exists
+  await conn.query(
+    "UPDATE users SET deleted_at = CURRENT_TIMESTAMP, name = 'User is deleted', email = 'User is deleted', password = 'User is deleted' WHERE id = ?",
+    [id]
+  );
+  res.status(200).json({ message: "Admin deleted successfully" });
+});
+
+// Route to get all users.
+router.get("/users", async (req, res) => {
+  try {
+    const { isAdmin, limit = 10, offset = 0 } = req.query;
+
+    // validate is_admin
+    if (isAdmin && ![1, 0].includes(parseInt(isAdmin))) {
+      return res.status(400).send("isAdmin invalid");
+    }
+
+    const condition = isAdmin === "1" ? "is_admin = 1" : "is_admin = 0";
+    const query = `SELECT * FROM users WHERE ${condition} LIMIT ? OFFSET ?`;
+    const [users, total] = await Promise.all([
+      conn.query(query, [parseInt(limit), parseInt(offset)]),
+      conn.query(`SELECT COUNT(*) as total FROM users WHERE ${condition}`),
+    ]);
+    res.json({
+      data: users.map((user) => {
+        return {
+          ...user,
+          id: Number(user.id),
+          created_at: Number(user.created_at),
+          updated_at: Number(user.updated_at),
+          deleted_at: user.deleted_at ? Number(user.deleted_at) : null,
+        };
+      }),
+      total: Number(total[0].total),
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+    });
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+});
 
 // Route to add a new pricelist.
 router.post("/addVehicle", async (req, res) => {
@@ -350,6 +565,33 @@ router.delete("/deleteVehicleType", async (req, res) => {
   res.status(200).json({ message: "Vehicle type deleted successfully" });
 });
 
+// Route to delete a vehicle brand
+router.delete("/deleteVehicleBrand", async (req, res) => {
+  const id = req.query.id;
+
+  // Check if the id is provided in the query string
+  if (!id) {
+    return res.status(400).send("Some required fields are missing.");
+  }
+
+  // Check if the id exists in the vehicle_brands table
+  const existingBrand = await conn.query(
+    "SELECT * FROM vehicle_brands WHERE id = ? AND deleted_at IS NULL",
+    [id]
+  );
+  if (existingBrand.length === 0) {
+    return res.status(404).json({ message: "Vehicle brand not found" });
+  }
+
+  // Update the deleted_at column with current datetime if the brand exists
+  await conn.query(
+    "UPDATE vehicle_brands SET deleted_at = CURRENT_TIMESTAMP, name = 'Vehicle brand is deleted' WHERE id = ?",
+    [id]
+  );
+
+  res.status(200).json({ message: "Vehicle brand deleted successfully" });
+});
+
 // Route to edit a vehicle
 router.patch("/updateVehicle", async (req, res) => {
   try {
@@ -376,9 +618,10 @@ router.patch("/updateVehicle", async (req, res) => {
     // Check if newCode is not copied to another
     if (newCode) {
       const existingCode = await conn.query(
-        "SELECT * FROM pricelists WHERE code = ? AND id != ? AND deleted_at IS NULL",
+        "SELECT * FROM pricelists WHERE code = ? AND deleted_at IS NULL",
         [newCode, id]
       );
+      console.log(newCode);
       if (existingCode.length > 0) {
         return res
           .status(409)
@@ -596,9 +839,7 @@ router.patch("/updateVehicleType", async (req, res) => {
         [newTypeName]
       );
       if (existingTypeName.length > 0) {
-        return res
-          .status(409)
-          .json({ message: "Vehicle type name already exists" });
+        return res.status(409).send("Vehicle type name already exists");
       }
     }
 
@@ -691,4 +932,5 @@ router.patch("/updateVehicleBrand", async (req, res) => {
   }
 });
 
+// Export the router
 export default router;

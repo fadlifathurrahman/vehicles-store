@@ -1,12 +1,5 @@
 USE vehicles;
 
-INSERT INTO users (`name`, email, `password`, is_admin) VALUES
-('user1', 'user1@example.com', 'user1', FALSE), 
-('user12', 'user2@example.com', 'user2', FALSE),
-('user13', 'user3@example.com', 'user3', FALSE),
-('admin1', 'admin1@example.com', 'admin1', TRUE),
-('admin2', 'admin2@example.com', 'admin2', TRUE);
-
 INSERT INTO vehicle_brands (`name`) VALUES
   ('Toyota'),
   ('Honda'),

@@ -25,18 +25,17 @@ router.post("/login", async (req, res) => {
 
     // Check if user exists
     if (user.length === 0) {
-      return res.status(401).send("Invalid email.");
+      return res.status(401).send("Invalid email or password.");
     }
-    // Check password match (non-hashing check)
-    const match = req.body.password === user[0].password;
-    if (!match) {
-      return res.status(401).send("Invalid password.");
+
+    // Check password match (hashing check)
+    const isPasswordMatch = await bcrypt.compare(
+      req.body.password,
+      user[0].password
+    );
+    if (!isPasswordMatch) {
+      return res.status(401).send("Invalid email or password.");
     }
-    // // Check password match (hashing check)
-    // const hashedPassword = await bcrypt.hash(req.body.password, 10);
-    // if (hashedPassword !== user[0].password) {
-    //   return res.status(401).send("Invalid password.");
-    // }
 
     // Sign a token with user id and send it with user data
     const token = jwt.sign(
@@ -65,13 +64,6 @@ router.post("/login", async (req, res) => {
   } catch (error) {
     res.status(500).send(error);
   }
-});
-
-// POST route for user logout
-router.post("/logout", (req, res) => {
-  // Clear the session cookie
-  res.clearCookie("token");
-  res.json({ message: "Logged out successfully" });
 });
 
 // POST route for user registration
@@ -116,6 +108,41 @@ router.post("/register", async (req, res) => {
       console.error(error);
       res.status(500).json({ message: "Internal server error" });
     }
+  }
+});
+
+// Route to register as an admin
+router.post("/registerAdmin", async (req, res) => {
+  try {
+    // Check if the email, password, and name are not empty
+    if (!req.body.email || !req.body.password || !req.body.name) {
+      return res.status(400).send("The request body cannot be empty.");
+    }
+
+    // Validate email uniqueness
+    const emailQuery = await conn.query("SELECT * FROM users WHERE email = ?", [
+      req.body.email,
+    ]);
+    if (emailQuery.length > 0) {
+      return res.status(409).send("Email already exists");
+    }
+
+    // Hash password before inserting to database
+    const hash = await bcrypt.hash(req.body.password, 10);
+
+    // Prepare a statement to insert a new user into the database
+    const prepare = await conn.prepare(
+      "INSERT INTO users (name, email, password, is_admin) VALUES (?, ?, ?, ?)"
+    );
+
+    // Execute the prepared statement with the hashed password and is_admin value
+    await prepare.execute([req.body.name, req.body.email, hash, 1]);
+
+    // Send a response indicating that the user was added
+    res.send("New admin added.");
+  } catch (error) {
+    // If there was an error, send a 500 status code with the error message
+    res.status(500).send(error);
   }
 });
 
