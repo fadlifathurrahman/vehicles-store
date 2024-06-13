@@ -15,6 +15,8 @@ API ini dibuat untuk mengelola data kendaraan, termasuk merek, tipe, tahun, mode
 
 **ERD**
 
+![ERD Vehicle](https://github.com/fadlifathurrahman/Vehicles/assets/110813489/250f09eb-6b24-4b02-aac3-a7482e955e52)
+
 
 **Hubungan antar tabel:**
 
