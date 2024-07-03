@@ -2,6 +2,11 @@
 
 API ini dibuat untuk mengelola data kendaraan, termasuk merek, tipe, tahun, model, dan daftar harga. API mengikuti kaidah RESTful API yang baik dan benar, dengan implementasi authentication, pagination, dan filter.
 
+**Tech Stack**
+
+* Node.Js
+* MySQL
+  
 **Fitur Utama**
 
 * **RESTful API:** GET all, GET by ID, POST, PATCH, DELETE
